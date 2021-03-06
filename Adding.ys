@@ -1,0 +1,70 @@
+.pos 0
+
+init:	irmovq Stack, %rsp
+	call main
+	halt	
+
+main: 
+	irmovq $8,  %r11	
+	subq %r14, %rsp		#stack pointer
+
+	irmovq $3, %r12	
+	pushq %r12		#push x onto stack
+	rrmovq %rsp, %rdi	#save x to argument
+
+
+	irmovq $y, %r13
+	mrmovq (%r13), %rsi	#save global y to argument
+
+	call add
+
+	irmovq $sum, %r14	
+	rmmovq %rax, (%r14)	#save rax to sum
+	addq %r11, %rsp		#restore stack
+	ret
+	
+add: 
+
+	mrmovq (%rdi), %r14	#
+	subq %rsi, %r14		#if(*x<y)
+	mrmovq (%rdi), %r10
+	jl	Loop1
+
+	jge 	Loop2
+	ret
+
+Loop1:	#x<y
+	irmovq $0, %r14		
+	
+	subq	%r10, %r14
+	cmovl %r10, %r14	#r14 = positive *a
+
+	addq %r14, %rax		#add *a to rax
+	irmovq $1, %r12		#increment 
+	addq %r12, %r10		#increment *x by 1
+
+	rrmovq %rsi, %r11	#r11=y
+	subq %r10, %r11		#changing flags
+	jge Loop1		#condition looping when condition still holds
+	ret
+	
+	
+Loop2: 
+	irmovq $0, %r14		#rsi=y rdi=x
+	subq %rsi, %r14
+	cmovl %rsi, %r14	#r14 = positive b
+	addq %r14, %rax		#add b to rax
+	irmovq $1, %r12		#increment 
+	addq %r12, %rsi		#increment rsi by 1
+	mrmovq (%rdi), %r13
+	subq %rsi, %r13
+	jge Loop2
+	ret
+
+
+	.align 8
+	.pos 0x400
+Stack: .quad 0
+y: .quad -3
+sum: .quad  0
+

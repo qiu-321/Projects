@@ -1,0 +1,69 @@
+#orfilia Qiu
+.pos 0
+init:	irmovq $Stack, %rsp
+	jmp main
+	halt
+
+
+main:	irmovq 	$count, %r11	#global count to temp
+	mrmovq	(%r11), %rsi 	#content of count to argument
+	irmovq	$array, %rdi	#%rdi=&array
+	jmp bubble
+	halt
+
+bubble:	rrmovq	%rsi, %r11	#last=count
+	irmovq	$1, %rcx
+	subq	%rcx, %r11	#last=count-1
+Loop1:	irmovq	$0, %r9		
+	rrmovq	%r9, %r12
+	andq	%r11, %r11	#set up flag for loop
+	jle L2
+	Loop2:	rrmovq	%r12, %r9
+		addq	%r9, %r9
+		addq	%r9, %r9
+		addq	%r9, %r9	#[i] element * 8
+		addq	%rdi, %r9	#r9 = array+(i*8)
+		mrmovq (%r9), %r13	#r13 is saved as array[i]
+		irmovq	$8, %rcx
+		addq	%rcx, %r9
+		mrmovq (%r9), %r14	#r14 is array[i+1]
+		rrmovq	%r13, %rbp	
+		subq	%r14, %r13
+		andq	%r13, %r13	#when array[i+1] < array[i]
+		jle L1
+		rmmovq	%rbp, (%r9)	#swap elements
+		irmovq	$8, %rcx
+		subq	%rcx, %r9
+		rmmovq	%r14, (%r9)
+		L1:		irmovq	$1, %rcx
+			addq	%rcx, %r12	#increment i
+			rrmovq	%r12, %r9
+			subq	%r11, %r9
+			jl Loop2			
+			irmovq	$1, %rcx
+			subq	%rcx, %r11	
+			jg Loop1			
+		L2:		ret
+		
+
+	.align	8
+count:	.quad 15
+array:	.quad 99
+	.quad 7
+	.quad 4
+	.quad 8
+	.quad -1
+	.quad 4
+	.quad 15
+	.quad 22
+	.quad 19
+	.quad 3
+	.quad 19
+	.quad -9
+	.quad -8
+	.quad -3
+	.quad 1
+	
+	.pos	0x400
+	.align	8
+Stack:	.quad 0

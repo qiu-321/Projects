@@ -1,0 +1,63 @@
+	.pos 0
+
+init:	irmovq $Stack, %rsp
+	call main
+	halt
+
+main:
+	irmovq	x, %r13
+	mrmovq (%r13), %rdi	#save x to argument
+
+	irmovq	$16, %r8
+	subq	%r8, %rsp	#stack pointer
+
+	irmovq	$-30, %r9		#-30 to temp register
+	rmmovq	%r9, 8(%rsp)		#push -30 onto stack
+
+
+	irmovq	$50, %r10
+	rmmovq	%r10, (%rsp)		#push 50 onto stack
+	mrmovq 8(%rsp), %rdx		#save -30 to argument
+	rrmovq	%rsp, %rcx		#save 50 to argument
+	
+
+	irmovq	$200, %r14		#save 200 to temp register
+	irmovq	y, %r11			#save y to temp register
+	rmmovq	%r14, (%r11)		#save 200 to y
+	rrmovq	%r11, %rsi		#save y to argument
+
+
+	call add
+	
+	irmovq sum, %r14	
+	rmmovq %rax, (%r14)		#save rax to sum
+
+	irmovq $0, %r9			#if statement
+	subq %rax, %r9			#checking if rax is negative
+	cmovg %r9, %rax			#sum=-sum
+	rmmovq %rax, (%r14)
+
+
+	addq	%r8, %rsp		#restore stack
+
+	ret
+
+add:			#inside long add()	
+
+	mrmovq (%rsi), %rax	#store *b in rax
+	mrmovq (%rcx), %r10	#store *d in r10
+	subq %r10, %rax
+
+	addq %rdi, %rax		#add a to rax
+	irmovq $26, %r9
+	subq %r9, %rax		#subtract 26 from rax
+	subq %rdx, %rax		#subtract c from rax
+	
+	ret
+
+.pos 0x200
+
+Stack: .quad 0
+x: .quad	100
+y: .quad	0
+sum: .quad 0
